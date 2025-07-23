@@ -1,5 +1,4 @@
 name: "IAC"
-
 on:
   push:
     branches:
