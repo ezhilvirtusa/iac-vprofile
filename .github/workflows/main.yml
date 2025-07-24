@@ -1,7 +1,8 @@
 name: "IAAC"
 on:
   push:
-  workflow_dispatch:
+    branches:
+      - main
 
 env:
     AWS_REGION: "us-east-1"
@@ -51,22 +52,22 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -no-color -input=false -auto-approve tfplan
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v3
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      # - name: Get Kube config
-      #   id: getconfig
-      #   if steps.apple.outcome == 'success'
-      #   run: aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
+      - name: Get Kube config
+        id: getconfig
+        if steps.apple.outcome == 'success'
+        run: aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
 
-      # - name: Install ingresscontroller
-      #   id: install_ingress
-      #   if steps.apple.outcome == 'success' && steps.getconfig.outcome == 'success'
-      #   run: |
-      #     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml
-      #     kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+      - name: Install ingresscontroller
+        id: install_ingress
+        if steps.apple.outcome == 'success' && steps.getconfig.outcome == 'success'
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml
+          kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
         
